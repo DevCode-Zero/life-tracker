@@ -218,6 +218,15 @@ export default function LoginPage() {
                 Enter your keys manually above to bypass environment variables. 
                 If sign-in works after entering keys here, the issue is with your Vercel Environment Variables.
               </p>
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={testConnection}
+                disabled={isLoading}
+                className="w-full text-xs h-8 border-blue-900/50 text-blue-400 hover:bg-blue-900/20"
+              >
+                {isLoading ? 'Testing...' : 'Test Connection (Table)'}
+              </Button>
             </div>
           )}
         </div>
