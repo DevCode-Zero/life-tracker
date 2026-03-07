@@ -19,6 +19,13 @@ export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
 
+  useEffect(() => {
+    console.log('API Check:', {
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 15) + '...',
+      keyPrefix: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.slice(0, 15) + '...'
+    });
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
