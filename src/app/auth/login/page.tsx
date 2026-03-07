@@ -1,0 +1,152 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { toast } from 'react-hot-toast';
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error('Please enter both email and password');
+      return;
+    }
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast.success('Successfully logged in!');
+      router.push('/dashboard');
+      router.refresh();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password || !fullName) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${location.origin}/auth/callback`,
+          data: {
+            full_name: fullName,
+          }
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success('Check your email to confirm your account!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to sign up');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
+      <div className="max-w-md w-full space-y-8 bg-zinc-900 p-8 rounded-2xl border border-zinc-800">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-white tracking-tight">
+            {isSignUp ? 'Create account' : 'Welcome back'}
+          </h2>
+          <p className="mt-2 text-sm text-zinc-400">
+            {isSignUp ? 'Join Life Tracker today' : 'Sign in to your Life Tracker account'}
+          </p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={isSignUp ? handleSignUp : handleLogin}>
+          <div className="space-y-4">
+            {isSignUp && (
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="John Doe"
+                  className="bg-zinc-950 border-zinc-800"
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email address</Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="bg-zinc-950 border-zinc-800"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="bg-zinc-950 border-zinc-800"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isLoading ? 'Processing...' : (isSignUp ? 'Sign up' : 'Sign in')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isLoading}
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            >
+              {isSignUp ? 'Already have an account? Sign in' : 'No account? Create one'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
