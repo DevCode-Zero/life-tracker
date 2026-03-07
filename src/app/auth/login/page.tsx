@@ -29,7 +29,7 @@ export default function LoginPage() {
     console.log('API Check:', {
       url: rawUrl.slice(0, 15) + '...',
       urlLength: rawUrl.length,
-      keyPrefix: rawKey.slice(0, 15) + '...',
+      keySuffix: '...' + rawKey.slice(-3),
       keyLength: rawKey.length,
       hasTrailingSlash: rawUrl.endsWith('/'),
       hasLeadingSpace: rawKey.startsWith(' ') || rawUrl.startsWith(' ')

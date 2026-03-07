@@ -7,13 +7,13 @@ export function createClient() {
   
   if (!url || !key) {
     console.error('Supabase credentials missing!', { url, keyLength: key?.length });
+  } else {
+    console.log('Client Init:', { 
+      url: url.slice(0, 15) + '...', 
+      keySuffix: '...' + key.slice(-3),
+      keyLength: key.length 
+    });
   }
 
-  return createBrowserClient(url, key, {
-    global: {
-      headers: {
-        'apikey': key,
-      }
-    }
-  })
+  return createBrowserClient(url, key)
 }
