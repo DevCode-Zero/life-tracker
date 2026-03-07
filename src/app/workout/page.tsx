@@ -21,7 +21,7 @@ export default function WorkoutPage() {
           <WorkoutToday userId={user?.id ?? ''} />
         </div>
         <div>
-          <DailyRoutineTimeline />
+          <DailyRoutineTimeline userId={user?.id ?? ''} />
         </div>
       </div>
     </div>
