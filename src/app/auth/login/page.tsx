@@ -55,7 +55,10 @@ export default function LoginPage() {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Login Detail Error:', error);
+        throw error;
+      }
 
       toast.success('Successfully logged in!');
       router.push('/dashboard');
@@ -92,7 +95,10 @@ export default function LoginPage() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Signup Detail Error:', error);
+        throw error;
+      }
 
       toast.success('Check your email to confirm your account!');
     } catch (error: any) {
