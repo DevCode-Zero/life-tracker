@@ -16,13 +16,23 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
+  const [manualUrl, setManualUrl] = useState('');
+  const [manualKey, setManualKey] = useState('');
   const router = useRouter();
+  
   const supabase = createClient();
 
   useEffect(() => {
+    const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
     console.log('API Check:', {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 15) + '...',
-      keyPrefix: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.slice(0, 15) + '...'
+      url: rawUrl.slice(0, 15) + '...',
+      urlLength: rawUrl.length,
+      keyPrefix: rawKey.slice(0, 15) + '...',
+      keyLength: rawKey.length,
+      hasTrailingSlash: rawUrl.endsWith('/'),
+      hasLeadingSpace: rawKey.startsWith(' ') || rawUrl.startsWith(' ')
     });
   }, []);
 
@@ -35,7 +45,12 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      let client = supabase;
+      if (debugMode && manualUrl && manualKey) {
+        const { createBrowserClient } = await import('@supabase/ssr');
+        client = createBrowserClient(manualUrl, manualKey);
+      }
+      const { error } = await client.auth.signInWithPassword({
         email,
         password,
       });
@@ -61,7 +76,12 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      let client = supabase;
+      if (debugMode && manualUrl && manualKey) {
+        const { createBrowserClient } = await import('@supabase/ssr');
+        client = createBrowserClient(manualUrl, manualKey);
+      }
+      const { error } = await client.auth.signUp({
         email,
         password,
         options: {
@@ -164,6 +184,37 @@ export default function LoginPage() {
             </Button>
           </div>
         </form>
+
+        <div className="mt-8 pt-6 border-t border-zinc-800">
+          <button
+            onClick={() => setDebugMode(!debugMode)}
+            className="text-[10px] text-zinc-600 hover:text-zinc-400 uppercase tracking-widest mx-auto block"
+          >
+            {debugMode ? 'Hide Debug' : 'Connection Debug'}
+          </button>
+          
+          {debugMode && (
+            <div className="mt-4 space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+              <p className="text-[10px] text-blue-400 font-mono">Manual Connection Override</p>
+              <Input 
+                className="text-xs font-mono h-8 bg-black border-zinc-800" 
+                placeholder="Supabase URL" 
+                value={manualUrl}
+                onChange={e => setManualUrl(e.target.value)}
+              />
+              <Input 
+                className="text-xs font-mono h-8 bg-black border-zinc-800" 
+                placeholder="Anon/Publishable Key" 
+                value={manualKey}
+                onChange={e => setManualKey(e.target.value)}
+              />
+              <p className="text-[9px] text-zinc-600 leading-tight">
+                Enter your keys manually above to bypass environment variables. 
+                If sign-in works after entering keys here, the issue is with your Vercel Environment Variables.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
