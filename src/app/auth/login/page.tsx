@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
@@ -76,31 +76,6 @@ export default function LoginPage() {
     }
   };
 
-  const testConnection = async () => {
-    setIsLoading(true);
-    try {
-      let client = supabase;
-      if (debugMode && manualUrl && manualKey) {
-        const { createBrowserClient } = await import('@supabase/ssr');
-        client = createBrowserClient(manualUrl, manualKey);
-      }
-      
-      // Simple head request to a common table
-      const { error } = await client.from('habits').select('id', { count: 'exact', head: true });
-      
-      if (error) {
-        console.error('Test Connection Error:', error);
-        toast.error(`Connection Failed: ${error.message}`);
-      } else {
-        toast.success('Connection Successful! Supabase is reachable.');
-      }
-    } catch (err: any) {
-      console.error('Test Connection Exception:', err);
-      toast.error(`Test Exception: ${err.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
