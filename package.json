@@ -20,7 +20,7 @@
     "db:seed": "node scripts/seed.js",
     "db:reset": "node scripts/reset.js",
     "analyze": "ANALYZE=true next build",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
