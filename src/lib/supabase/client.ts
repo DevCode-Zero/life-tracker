@@ -8,10 +8,13 @@ export function createClient() {
   if (!url || !key) {
     console.error('Supabase credentials missing!', { url, keyLength: key?.length });
   } else {
+    const isJWT = key.startsWith('eyJ');
     console.log('Client Init:', { 
       url: url.slice(0, 15) + '...', 
       keySuffix: '...' + key.slice(-3),
-      keyLength: key.length 
+      keyLength: key.length,
+      isJWT,
+      type: isJWT ? 'Legacy Anon' : (key.startsWith('sb_p') ? 'New Publishable' : 'Unknown')
     });
   }
 
