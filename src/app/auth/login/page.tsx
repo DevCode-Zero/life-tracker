@@ -16,25 +16,9 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [debugMode, setDebugMode] = useState(false);
-  const [manualUrl, setManualUrl] = useState('');
-  const [manualKey, setManualKey] = useState('');
   const router = useRouter();
   
   const supabase = createClient();
-
-  useEffect(() => {
-    const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    console.log('API Check:', {
-      url: rawUrl.slice(0, 15) + '...',
-      urlLength: rawUrl.length,
-      keySuffix: '...' + rawKey.slice(-3),
-      keyLength: rawKey.length,
-      hasTrailingSlash: rawUrl.endsWith('/'),
-      hasLeadingSpace: rawKey.startsWith(' ') || rawUrl.startsWith(' ')
-    });
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,20 +29,12 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      let client = supabase;
-      if (debugMode && manualUrl && manualKey) {
-        const { createBrowserClient } = await import('@supabase/ssr');
-        client = createBrowserClient(manualUrl, manualKey);
-      }
-      const { error } = await client.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        console.error('Login Detail Error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       toast.success('Successfully logged in!');
       router.push('/dashboard');
@@ -79,12 +55,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      let client = supabase;
-      if (debugMode && manualUrl && manualKey) {
-        const { createBrowserClient } = await import('@supabase/ssr');
-        client = createBrowserClient(manualUrl, manualKey);
-      }
-      const { error } = await client.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -95,10 +66,7 @@ export default function LoginPage() {
         },
       });
 
-      if (error) {
-        console.error('Signup Detail Error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       toast.success('Check your email to confirm your account!');
     } catch (error: any) {
@@ -216,46 +184,6 @@ export default function LoginPage() {
             </Button>
           </div>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-zinc-800">
-          <button
-            onClick={() => setDebugMode(!debugMode)}
-            className="text-[10px] text-zinc-600 hover:text-zinc-400 uppercase tracking-widest mx-auto block"
-          >
-            {debugMode ? 'Hide Debug' : 'Connection Debug'}
-          </button>
-          
-          {debugMode && (
-            <div className="mt-4 space-y-3 bg-zinc-950 p-4 rounded-xl border border-zinc-800">
-              <p className="text-[10px] text-blue-400 font-mono">Manual Connection Override</p>
-              <Input 
-                className="text-xs font-mono h-8 bg-black border-zinc-800" 
-                placeholder="Supabase URL" 
-                value={manualUrl}
-                onChange={e => setManualUrl(e.target.value)}
-              />
-              <Input 
-                className="text-xs font-mono h-8 bg-black border-zinc-800" 
-                placeholder="Anon/Publishable Key" 
-                value={manualKey}
-                onChange={e => setManualKey(e.target.value)}
-              />
-              <p className="text-[9px] text-zinc-600 leading-tight">
-                Enter your keys manually above to bypass environment variables. 
-                If sign-in works after entering keys here, the issue is with your Vercel Environment Variables.
-              </p>
-              <Button 
-                type="button"
-                variant="outline"
-                onClick={testConnection}
-                disabled={isLoading}
-                className="w-full text-xs h-8 border-blue-900/50 text-blue-400 hover:bg-blue-900/20"
-              >
-                {isLoading ? 'Testing...' : 'Test Connection (Table)'}
-              </Button>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
