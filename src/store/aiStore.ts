@@ -143,7 +143,12 @@ export const useAIStore = create<AIStore>()(
             response.action !== "query" &&
             response.action !== "unknown"
           ) {
-            await executeAction(response.action, response.payload, userId);
+            await executeAction(
+              response.action,
+              response.payload,
+              userId,
+              context,
+            );
           }
         } catch (error) {
           const message =
@@ -166,6 +171,13 @@ async function executeAction(
   action: string,
   payload: Record<string, unknown>,
   userId: string | undefined,
+  context: AIContext = {
+    habits: [],
+    topStreak: 0,
+    budgetSummary: null,
+    workoutPlans: [],
+    mealPlans: [],
+  },
 ) {
   if (!userId) return;
 
@@ -189,6 +201,28 @@ async function executeAction(
           store.setHabits(habits);
         }
         break;
+
+      case "mark_habit_complete": {
+        const { logHabit } = await import("@/lib/habits");
+        const habitName = ((payload.name as string) || "").toLowerCase();
+        const habits = context.habits;
+        const match = habits.find(
+          (h) =>
+            h.name.toLowerCase().includes(habitName) ||
+            habitName.includes(h.name.toLowerCase()),
+        );
+        if (match) {
+          const { getHabitsWithLogs } = await import("@/lib/habits");
+          await logHabit(
+            match.id,
+            userId,
+            new Date().toISOString().split("T")[0],
+          );
+          const updated = await getHabitsWithLogs(userId);
+          store.setHabits(updated);
+        }
+        break;
+      }
 
       case "log_workout":
       case "log_workout_by_name":

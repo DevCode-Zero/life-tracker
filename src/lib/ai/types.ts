@@ -30,6 +30,7 @@ export interface AIState {
 export interface AIAction {
   type:
     | "add_habit"
+    | "mark_habit_complete"
     | "log_workout"
     | "add_expense"
     | "add_meal"

@@ -62,6 +62,26 @@ function localFallback(input: string): AIResponse | null {
     };
   }
 
+  // Mark habit complete patterns
+  if (
+    (lower.includes("mark") ||
+      lower.includes("complete") ||
+      lower.includes("done")) &&
+    !lower.includes("add")
+  ) {
+    const habitMatch = input.match(
+      /(?:mark|complete|done|log)\s+(?:completed\s+)?(?:for\s+)?(?:my\s+)?(.+)/i,
+    );
+    if (habitMatch) {
+      const name = habitMatch[1].trim();
+      return {
+        action: "mark_habit_complete",
+        payload: { name },
+        response: `${suggestEmoji(name)} I've marked "${name}" as complete!`,
+      };
+    }
+  }
+
   // Log workout patterns
   if (
     lower.includes("log") &&
@@ -126,9 +146,10 @@ When asked about your streak, report the Top Streak (e.g. "Your best streak is 3
 IMPORTANT: When the user asks you to DO something, you MUST respond with ONLY a JSON object in this exact format:
 {"action": "add_habit", "payload": {"name": "Drink water", "frequency": "daily", "emoji": "💧"}, "response": "💧 I've added a habit to drink water daily!"}
 
-Valid actions: "add_habit", "log_workout_by_name", "add_expense", "add_income", "add_meal", "query", "unknown"
+Valid actions: "add_habit", "mark_habit_complete", "log_workout_by_name", "add_expense", "add_income", "add_meal", "query", "unknown"
 
 For "add_habit": payload needs "name" (required), "frequency" (optional, "daily" or "weekly"), "emoji" (optional, suggest a relevant emoji based on the habit name e.g. 💧 for water, 🍽️ for eating, 💪 for workout, 📚 for reading)
+For "mark_habit_complete": payload needs "name" (habit name to mark done)
 For "log_workout_by_name": payload needs "name" (the type of workout)
 For "add_expense"/"add_income": payload needs "amount" (number), "category" (optional)
 For "add_meal": payload needs "meal_type" and "name"
