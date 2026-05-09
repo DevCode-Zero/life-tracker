@@ -1,87 +1,90 @@
-'use client'
+"use client";
 
-import { useEffect, useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import toast from 'react-hot-toast'
-import { getHabitsWithLogs, logHabit, unlogHabit } from '@/lib/habits'
-import { useStore } from '@/store'
-import { cn, todayString } from '@/lib/utils'
-import { format, subDays } from 'date-fns'
-import { Plus, Flame, Pencil, Trash2 } from 'lucide-react'
-import type { HabitWithLogs } from '@/types'
-import { AddHabitModal } from './AddHabitModal'
-import { UpdateHabitModal } from './UpdateHabitModal'
-import { deleteHabit } from '@/lib/habits'
+import { useEffect, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
+import { getHabitsWithLogs, logHabit, unlogHabit } from "@/lib/habits";
+import { useStore } from "@/store";
+import { cn, todayString } from "@/lib/utils";
+import { format, subDays, getDay } from "date-fns";
+import { Plus, Flame, Pencil, Trash2 } from "lucide-react";
+import type { HabitWithLogs } from "@/types";
+import { AddHabitModal } from "./AddHabitModal";
+import { UpdateHabitModal } from "./UpdateHabitModal";
+import { deleteHabit } from "@/lib/habits";
 
 interface HabitGridProps {
-  userId: string
+  userId: string;
 }
 
-const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+const SHORT_DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export function HabitGrid({ userId }: HabitGridProps) {
-  const { habits, setHabits, updateHabitCompletion } = useStore()
-  const [loading, setLoading] = useState(true)
-  const [toggling, setToggling] = useState<string | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingHabit, setEditingHabit] = useState<HabitWithLogs | null>(null)
+  const { habits, setHabits, updateHabitCompletion } = useStore();
+  const [loading, setLoading] = useState(true);
+  const [toggling, setToggling] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<HabitWithLogs | null>(null);
 
-  const today = todayString()
+  const today = todayString();
   const weekDates = Array.from({ length: 7 }, (_, i) =>
-    format(subDays(new Date(), 6 - i), 'yyyy-MM-dd')
-  )
+    format(subDays(new Date(), 6 - i), "yyyy-MM-dd"),
+  );
 
   const load = useCallback(async () => {
-    if (!userId) return
+    if (!userId) return;
     try {
-      const data = await getHabitsWithLogs(userId, 7)
-      setHabits(data)
+      const data = await getHabitsWithLogs(userId, 7);
+      setHabits(data);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [userId, setHabits])
+  }, [userId, setHabits]);
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const handleToggle = async (habit: HabitWithLogs) => {
-    if (toggling) return
-    setToggling(habit.id)
+    if (toggling) return;
+    setToggling(habit.id);
 
-    const wasCompleted = habit.completed_today
+    const wasCompleted = habit.completed_today;
     // Optimistic update
-    updateHabitCompletion(habit.id, !wasCompleted)
+    updateHabitCompletion(habit.id, !wasCompleted);
 
     try {
       if (wasCompleted) {
-        await unlogHabit(habit.id, today)
-        toast(`${habit.emoji} ${habit.name} unchecked`, { icon: '↩️' })
+        await unlogHabit(habit.id, today);
+        toast(`${habit.emoji} ${habit.name} unchecked`, { icon: "↩️" });
       } else {
-        await logHabit(habit.id, userId, today)
-        toast.success(`${habit.emoji} ${habit.name} done!`)
+        await logHabit(habit.id, userId, today);
+        toast.success(`${habit.emoji} ${habit.name} done!`);
       }
-      await load()
+      await load();
     } catch (err) {
       // Rollback
-      updateHabitCompletion(habit.id, wasCompleted)
-      toast.error('Failed to update habit')
+      updateHabitCompletion(habit.id, wasCompleted);
+      toast.error("Failed to update habit");
     } finally {
-      setToggling(null)
+      setToggling(null);
     }
-  }
+  };
 
   const handleDelete = async (habitId: string) => {
-    if (!confirm('Are you sure you want to delete this habit?')) return
+    if (!confirm("Are you sure you want to delete this habit?")) return;
     try {
-      await deleteHabit(habitId)
-      toast.success('Habit deleted')
-      load()
+      await deleteHabit(habitId);
+      toast.success("Habit deleted");
+      await load();
     } catch (err: any) {
-      toast.error(err.message)
+      toast.error(err.message);
     }
-  }
+  };
 
-  const completedCount = habits.filter((h) => h.completed_today).length
-  const score = habits.length > 0 ? Math.round((completedCount / habits.length) * 100) : 0
+  const completedCount = habits.filter((h) => h.completed_today).length;
+  const score =
+    habits.length > 0 ? Math.round((completedCount / habits.length) * 100) : 0;
 
   return (
     <div className="card">
@@ -90,20 +93,24 @@ export function HabitGrid({ userId }: HabitGridProps) {
         <div>
           <h2 className="card-title">⚡ Today's Habits</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {format(new Date(), 'EEEE, MMM d')}
+            {format(new Date(), "EEEE, MMM d")}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className={cn(
-            'px-3 py-1 rounded-full text-xs font-mono font-semibold border',
-            score >= 80 ? 'bg-green-500/10 border-green-500/30 text-green-400' :
-            score >= 50 ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' :
-            'bg-muted border-border text-muted-foreground'
-          )}>
+          <div
+            className={cn(
+              "px-3 py-1 rounded-full text-xs font-mono font-semibold border",
+              score >= 80
+                ? "bg-green-500/10 border-green-500/30 text-green-400"
+                : score >= 50
+                  ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
+                  : "bg-muted border-border text-muted-foreground",
+            )}
+          >
             {completedCount}/{habits.length} · {score}%
           </div>
-          <button 
-            className="btn-icon" 
+          <button
+            className="btn-icon"
             title="Add habit"
             onClick={() => setIsModalOpen(true)}
           >
@@ -132,22 +139,22 @@ export function HabitGrid({ userId }: HabitGridProps) {
           className="h-full rounded-full bg-gradient-to-r from-violet-500 to-pink-500"
           initial={{ width: 0 }}
           animate={{ width: `${score}%` }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         />
       </div>
 
       {/* Day headers */}
       <div className="grid grid-cols-[1fr_repeat(7,28px)] gap-x-1 mb-2 px-1">
         <div />
-        {DAY_LABELS.map((d, i) => (
+        {weekDates.map((date, i) => (
           <div
             key={i}
             className={cn(
-              'text-center text-[10px] font-semibold font-mono',
-              weekDates[i] === today ? 'text-violet-400' : 'text-muted-foreground'
+              "text-center text-[10px] font-semibold font-mono",
+              date === today ? "text-violet-400" : "text-muted-foreground",
             )}
           >
-            {d}
+            {SHORT_DAYS[getDay(new Date(date))]}
           </div>
         ))}
       </div>
@@ -181,7 +188,7 @@ export function HabitGrid({ userId }: HabitGridProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function HabitRow({
@@ -193,54 +200,65 @@ function HabitRow({
   onEdit,
   onDelete,
 }: {
-  habit: HabitWithLogs
-  weekDates: string[]
-  today: string
-  isToggling: boolean
-  onToggleToday: () => void
-  onEdit: () => void
-  onDelete: () => void
+  habit: HabitWithLogs;
+  weekDates: string[];
+  today: string;
+  isToggling: boolean;
+  onToggleToday: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   return (
     <motion.div
       layout
       className={cn(
-        'group grid grid-cols-[1fr_repeat(7,28px)] gap-x-1 items-center px-1 py-1.5 rounded-lg',
-        'transition-colors hover:bg-muted/30',
-        habit.completed_today && 'bg-green-500/5'
+        "group grid grid-cols-[1fr_repeat(7,28px)] gap-x-1 items-center px-1 py-1.5 rounded-lg",
+        "transition-colors hover:bg-muted/30",
+        habit.completed_today && "bg-green-500/5",
       )}
     >
       {/* Habit name */}
       <div className="flex items-center gap-2 min-w-0 pr-2">
         <span className="text-base leading-none">{habit.emoji}</span>
-        <span className={cn(
-          'text-sm truncate mr-1',
-          habit.completed_today ? 'text-foreground font-medium' : 'text-muted-foreground'
-        )}>
+        <span
+          className={cn(
+            "text-sm truncate mr-1",
+            habit.completed_today
+              ? "text-foreground font-medium"
+              : "text-muted-foreground",
+          )}
+        >
           {habit.name}
         </span>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={onEdit} className="p-0.5 hover:text-blue-400 text-zinc-600">
+          <button
+            onClick={onEdit}
+            className="p-0.5 hover:text-blue-400 text-zinc-600"
+          >
             <Pencil className="w-3 h-3" />
           </button>
-          <button onClick={onDelete} className="p-0.5 hover:text-red-400 text-zinc-600">
+          <button
+            onClick={onDelete}
+            className="p-0.5 hover:text-red-400 text-zinc-600"
+          >
             <Trash2 className="w-3 h-3" />
           </button>
         </div>
         {habit.streak_current >= 3 && (
           <span className="ml-auto flex items-center gap-0.5 text-[10px] font-mono text-orange-400 shrink-0">
-            <Flame className="w-2.5 h-2.5" />{habit.streak_current}
+            <Flame className="w-2.5 h-2.5" />
+            {habit.streak_current}
           </span>
         )}
       </div>
 
       {/* Day dots */}
       {weekDates.map((date) => {
-        const isToday = date === today
+        const isToday = date === today;
         const completed = isToday
           ? habit.completed_today
-          : habit.logs.some((l) => l.completed_at === date)
-        const isFuture = date > today
+          : habit.logs.some((l) => l.completed_at === date);
+        const isFuture = date > today;
 
         return (
           <button
@@ -248,16 +266,20 @@ function HabitRow({
             disabled={!isToday || isToggling || isFuture}
             onClick={isToday ? onToggleToday : undefined}
             className={cn(
-              'w-6 h-6 rounded-md mx-auto flex items-center justify-center',
-              'transition-all duration-150',
-              isFuture && 'opacity-20 cursor-default',
-              !isFuture && !isToday && 'cursor-default',
-              isToday && !completed && 'border-2 border-violet-500/50 hover:border-violet-500 hover:bg-violet-500/10 cursor-pointer',
-              isToday && isToggling && 'opacity-50',
-              completed && 'bg-green-500 shadow-[0_0_8px_rgba(74,222,128,0.4)]',
-              !completed && !isToday && !isFuture && 'bg-muted/60',
+              "w-6 h-6 rounded-md mx-auto flex items-center justify-center",
+              "transition-all duration-150",
+              isFuture && "opacity-20 cursor-default",
+              !isFuture && !isToday && "cursor-default",
+              isToday &&
+                !completed &&
+                "border-2 border-violet-500/50 hover:border-violet-500 hover:bg-violet-500/10 cursor-pointer",
+              isToday && isToggling && "opacity-50",
+              completed && "bg-green-500 shadow-[0_0_8px_rgba(74,222,128,0.4)]",
+              !completed && !isToday && !isFuture && "bg-muted/60",
             )}
-            title={isToday ? (completed ? 'Mark incomplete' : 'Mark complete') : date}
+            title={
+              isToday ? (completed ? "Mark incomplete" : "Mark complete") : date
+            }
           >
             {completed && (
               <motion.span
@@ -269,8 +291,8 @@ function HabitRow({
               </motion.span>
             )}
           </button>
-        )
+        );
       })}
     </motion.div>
-  )
+  );
 }

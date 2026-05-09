@@ -1,68 +1,79 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useStore } from '@/store'
-import { getHabitsWithLogs } from '@/lib/habits'
-import { getMonthlyBudgetSummary } from '@/lib/budget'
-import { getWeeklyWorkoutCount } from '@/lib/workout'
-import { StatCard } from '@/components/shared/StatCard'
-import { HabitGrid } from '@/components/habits/HabitGrid'
-import { BudgetOverview } from '@/components/budget/BudgetOverview'
-import { WorkoutToday } from '@/components/workout/WorkoutToday'
-import { MealPlanWeek } from '@/components/nutrition/MealPlanWeek'
-import { LifeScoreRing } from '@/components/shared/LifeScoreRing'
-import { GoalsList } from '@/components/budget/GoalsList'
-import { MonthlyCheckboxTracker } from '@/components/shared/MonthlyCheckboxTracker'
-import { DailyRoutineTimeline } from '@/components/workout/DailyRoutineTimeline'
-import { formatCompactCurrency, calculateLifeScore, currentMonth } from '@/lib/utils'
-import { Activity, Flame, TrendingUp, Wallet } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { useStore } from "@/store";
+import { getHabitsWithLogs } from "@/lib/habits";
+import { getMonthlyBudgetSummary } from "@/lib/budget";
+import { getWeeklyWorkoutCount } from "@/lib/workout";
+import { StatCard } from "@/components/shared/StatCard";
+import { HabitGrid } from "@/components/habits/HabitGrid";
+import { BudgetOverview } from "@/components/budget/BudgetOverview";
+import { WorkoutToday } from "@/components/workout/WorkoutToday";
+import { MealPlanWeek } from "@/components/nutrition/MealPlanWeek";
+import { LifeScoreRing } from "@/components/shared/LifeScoreRing";
+import { GoalsList } from "@/components/budget/GoalsList";
+import { MonthlyCheckboxTracker } from "@/components/shared/MonthlyCheckboxTracker";
+import { DailyRoutineTimeline } from "@/components/workout/DailyRoutineTimeline";
+import {
+  formatCompactCurrency,
+  calculateLifeScore,
+  currentMonth,
+} from "@/lib/utils";
+import { Activity, Flame, TrendingUp, Wallet } from "lucide-react";
 
 export default function DashboardPage() {
-  const { user, habits, budgetSummary, setHabits, setBudgetSummary } = useStore()
-  const [loading, setLoading] = useState(true)
-  const [workoutCount, setWorkoutCount] = useState(0)
+  const { user, habits, budgetSummary, setHabits, setBudgetSummary } =
+    useStore();
+  const [loading, setLoading] = useState(true);
+  const [workoutCount, setWorkoutCount] = useState(0);
 
-  const habitsCompletedToday = habits.filter((h) => h.completed_today).length
-  const habitScore = habits.length > 0
-    ? Math.round((habitsCompletedToday / habits.length) * 100)
-    : 0
+  const habitsCompletedToday = habits.filter((h) => h.completed_today).length;
+  const habitScore =
+    habits.length > 0
+      ? Math.round((habitsCompletedToday / habits.length) * 100)
+      : 0;
 
-  const topStreak = habits.reduce((m, h) => Math.max(m, h.streak_current), 0)
+  const topStreak = habits.reduce((m, h) => Math.max(m, h.streak_current), 0);
 
   const lifeScore = calculateLifeScore({
     habitScore,
     savingsRate: budgetSummary?.savings_rate ?? 0,
     workoutDaysThisWeek: workoutCount,
-  })
+  });
 
   useEffect(() => {
-    if (!user?.id) return
+    if (!user?.id) return;
     async function load() {
       try {
         const [habitsData, budgetData, wCount] = await Promise.all([
           getHabitsWithLogs(user!.id),
           getMonthlyBudgetSummary(user!.id),
           getWeeklyWorkoutCount(user!.id),
-        ])
-        setHabits(habitsData)
-        setBudgetSummary(budgetData)
-        setWorkoutCount(wCount)
+        ]);
+        setHabits(habitsData);
+        setBudgetSummary(budgetData);
+        setWorkoutCount(wCount);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    load()
-  }, [user?.id])
+    load();
+  }, [user?.id]);
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <p className="text-xs font-mono text-muted-foreground mb-1">
-          {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          {new Date().toLocaleDateString("en-IN", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
         </p>
         <h1 className="text-3xl font-display font-extrabold tracking-tight">
-          Good {getGreeting()}, {user?.full_name?.split(' ')[0] ?? 'Xai'} ✦
+          Good {getGreeting()}, {user?.full_name?.split(" ")[0] ?? "Xai"} ✦
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
           {topStreak > 0
@@ -111,27 +122,44 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left — 2 cols */}
         <div className="lg:col-span-2 space-y-6">
-          <HabitGrid userId={user?.id ?? ''} />
-          <BudgetOverview summary={budgetSummary} loading={loading} />
-          <WorkoutToday userId={user?.id ?? ''} />
-          <MealPlanWeek userId={user?.id ?? ''} />
+          {user?.id ? (
+            <>
+              <HabitGrid userId={user.id} />
+              <BudgetOverview summary={budgetSummary} loading={loading} />
+              <WorkoutToday userId={user.id} />
+              <MealPlanWeek userId={user.id} />
+            </>
+          ) : (
+            <div className="py-12 text-center text-muted-foreground">
+              <p className="text-3xl mb-2">🔒</p>
+              <p className="text-sm">Sign in to view your dashboard</p>
+            </div>
+          )}
         </div>
 
         {/* Right — 1 col */}
         <div className="space-y-6">
           <LifeScoreRing score={lifeScore} habitScore={habitScore} />
-          <MonthlyCheckboxTracker userId={user?.id ?? ''} />
-          <DailyRoutineTimeline userId={user?.id ?? ''} />
-          <GoalsList userId={user?.id ?? ''} />
+          {user?.id ? (
+            <>
+              <MonthlyCheckboxTracker userId={user.id} />
+              <DailyRoutineTimeline userId={user.id} />
+              <GoalsList userId={user.id} />
+            </>
+          ) : (
+            <div className="py-12 text-center text-muted-foreground">
+              <p className="text-sm">Sign in to track your progress</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function getGreeting(): string {
-  const h = new Date().getHours()
-  if (h < 12) return 'morning'
-  if (h < 17) return 'afternoon'
-  return 'evening'
+  const h = new Date().getHours();
+  if (h < 12) return "morning";
+  if (h < 17) return "afternoon";
+  return "evening";
 }

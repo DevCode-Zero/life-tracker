@@ -1,9 +1,10 @@
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { safeGetSession } from "@/lib/supabase/safe-session";
 
 export default async function Home() {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const { session } = await safeGetSession(supabase);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
@@ -19,15 +20,15 @@ export default async function Home() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
           {session ? (
-            <Link 
-              href="/dashboard" 
+            <Link
+              href="/dashboard"
               className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors w-full sm:w-auto"
             >
               Go to Dashboard
             </Link>
           ) : (
-            <Link 
-              href="/auth/login" 
+            <Link
+              href="/auth/login"
               className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors w-full sm:w-auto"
             >
               Sign In
