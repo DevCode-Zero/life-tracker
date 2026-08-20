@@ -133,6 +133,7 @@ export async function sendMessage(
 - Budget (add transactions/view budget)
 - Workouts (log workouts/view plans)
 - Nutrition (log meals/view plans)
+- General advice on health, fitness, nutrition, productivity, and life
 
 Current user data:
 - Habits: ${JSON.stringify(context.habits)}
@@ -143,22 +144,26 @@ Current user data:
 
 When asked about your streak, report the Top Streak (e.g. "Your best streak is 3 days! 🔥").
 
-IMPORTANT: When the user asks you to DO something, you MUST respond with ONLY a JSON object in this exact format:
-{"action": "add_habit", "payload": {"name": "Drink water", "frequency": "daily", "emoji": "💧"}, "response": "💧 I've added a habit to drink water daily!"}
+RULES:
+1. You MUST respond with ONLY a JSON object, nothing else.
+2. When the user asks you to DO something (add a habit, log a meal, log a workout, add an expense/income), use the matching action.
+3. When the user asks a question, wants advice, or asks for a plan/routine, use action "query" and put your helpful answer in the "response" field.
 
 Valid actions: "add_habit", "mark_habit_complete", "log_workout_by_name", "add_expense", "add_income", "add_meal", "query", "unknown"
 
-For "add_habit": payload needs "name" (required), "frequency" (optional, "daily" or "weekly"), "emoji" (optional, suggest a relevant emoji based on the habit name e.g. 💧 for water, 🍽️ for eating, 💪 for workout, 📚 for reading)
-For "mark_habit_complete": payload needs "name" (habit name to mark done)
-For "log_workout_by_name": payload needs "name" (the type of workout)
-For "add_expense"/"add_income": payload needs "amount" (number), "category" (optional)
-For "add_meal": payload needs "meal_type" and "name"
-
-If just answering a question, use action "query" and put your answer in "response".
+Action payloads:
+- "add_habit": {"name": "...", "frequency": "daily"|"weekly", "emoji": "..."}
+- "mark_habit_complete": {"name": "habit name"}
+- "log_workout_by_name": {"name": "workout type"}
+- "add_expense": {"amount": number, "category": "..."}
+- "add_income": {"amount": number, "category": "..."}
+- "add_meal": {"meal_type": "...", "name": "..."}
+- "query": {} (put your answer in "response")
+- "unknown": {} (when you don't understand)
 
 User says: "${userInput}"
 
-Respond with ONLY the JSON object:`;
+Respond with ONLY the JSON object. In the "response" field, write plain text only — no markdown, no bold (**), no headers. Use actual line breaks (\n) for new lines. Keep it clean and easy to read.`;
 
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
@@ -175,7 +180,7 @@ Respond with ONLY the JSON object:`;
         model: "openrouter/free",
         messages: [{ role: "user", content: fullPrompt }],
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: 2048,
       }),
     });
 
@@ -201,20 +206,32 @@ Respond with ONLY the JSON object:`;
 
     try {
       const parsed = JSON.parse(jsonString);
+      const rawResponse = parsed.response || content;
+      const cleanResponse = rawResponse
+        .replace(/\\n/g, "\n")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/^#{1,3}\s+/gm, "");
       return {
         action: parsed.action || "query",
         payload: parsed.payload || {},
-        response: parsed.response || content,
+        response: cleanResponse,
       };
     } catch {
       // If JSON parsing fails, try local fallback
       const fallback = localFallback(userInput);
       if (fallback) return fallback;
 
+      const cleanContent = content
+        .replace(/\\n/g, "\n")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/^#{1,3}\s+/gm, "")
+        .replace(/^\s*```[\s\S]*?\n/gm, "")
+        .replace(/\n\s*```\s*$/gm, "");
+
       return {
         action: "query",
         payload: {},
-        response: content || "I'm not sure how to help with that.",
+        response: cleanContent || "I'm not sure how to help with that.",
       };
     }
   } catch (error) {
