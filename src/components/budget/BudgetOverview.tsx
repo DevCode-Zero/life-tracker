@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { formatCurrency, toPercent, cn } from "@/lib/utils";
-import type { MonthlyBudgetSummary } from "@/types";
+import type { BudgetCategory, MonthlyBudgetSummary } from "@/types";
 import { Plus, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
@@ -96,38 +96,27 @@ export function BudgetOverview({ summary, loading }: BudgetOverviewProps) {
 
       {/* Expense bars */}
       <div className="space-y-4 mb-5">
-        {[
-          {
-            key: "rent",
-            label: "Rent",
-            emoji: "🏠",
-            color: "from-violet-500 to-purple-600",
-          },
-          {
-            key: "food",
-            label: "Food",
-            emoji: "🍛",
-            color: "from-green-400 to-emerald-500",
-          },
-          {
-            key: "transport",
-            label: "Transport",
-            emoji: "🚌",
-            color: "from-orange-400 to-amber-500",
-          },
-          {
-            key: "personal",
-            label: "Personal",
-            emoji: "👕",
-            color: "from-pink-400 to-rose-500",
-          },
-          {
-            key: "utilities",
-            label: "Utilities",
-            emoji: "⚡",
-            color: "from-blue-400 to-cyan-500",
-          },
-        ].map((row, i) => {
+        {(
+          [
+            { key: "rent", label: "Rent", emoji: "🏠", color: "from-violet-500 to-purple-600" },
+            { key: "food", label: "Food", emoji: "🍛", color: "from-green-400 to-emerald-500" },
+            { key: "transport", label: "Transport", emoji: "🚌", color: "from-orange-400 to-amber-500" },
+            { key: "personal", label: "Personal", emoji: "👕", color: "from-pink-400 to-rose-500" },
+            { key: "utilities", label: "Utilities", emoji: "⚡", color: "from-blue-400 to-cyan-500" },
+            { key: "entertainment", label: "Entertainment", emoji: "🎬", color: "from-fuchsia-400 to-pink-500" },
+            { key: "health", label: "Health", emoji: "🏥", color: "from-red-400 to-rose-600" },
+            { key: "learning", label: "Learning", emoji: "📚", color: "from-yellow-400 to-amber-500" },
+            { key: "sip", label: "SIP", emoji: "📈", color: "from-teal-400 to-cyan-600" },
+            { key: "emergency_fund", label: "Emergency Fund", emoji: "🚨", color: "from-slate-400 to-zinc-500" },
+            { key: "other", label: "Other", emoji: "📦", color: "from-gray-400 to-slate-500" },
+          ] as { key: BudgetCategory; label: string; emoji: string; color: string }[]
+        ).filter((row) => {
+          const spent = getSpent(row.key);
+          const budgetItem = budgetItems.find(
+            (item) => item.category === row.key,
+          );
+          return spent > 0 || budgetItem?.budgeted_amount > 0;
+        }).map((row, i) => {
           const spent = getSpent(row.key);
           const budgetItem = budgetItems.find(
             (item) => item.category === row.key,

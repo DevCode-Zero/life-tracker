@@ -20,6 +20,7 @@ import {
   currentMonth,
 } from "@/lib/utils";
 import { Activity, Flame, TrendingUp, Wallet } from "lucide-react";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 export default function DashboardPage() {
   const { user, habits, budgetSummary, setHabits, setBudgetSummary } =
@@ -124,10 +125,18 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
           {user?.id ? (
             <>
-              <HabitGrid userId={user.id} />
-              <BudgetOverview summary={budgetSummary} loading={loading} />
-              <WorkoutToday userId={user.id} />
-              <MealPlanWeek userId={user.id} />
+              <ErrorBoundary sectionName="Habits">
+                <HabitGrid userId={user.id} />
+              </ErrorBoundary>
+              <ErrorBoundary sectionName="Budget">
+                <BudgetOverview summary={budgetSummary} loading={loading} />
+              </ErrorBoundary>
+              <ErrorBoundary sectionName="Workout">
+                <WorkoutToday userId={user.id} />
+              </ErrorBoundary>
+              <ErrorBoundary sectionName="Nutrition">
+                <MealPlanWeek userId={user.id} />
+              </ErrorBoundary>
             </>
           ) : (
             <div className="py-12 text-center text-muted-foreground">
@@ -142,9 +151,15 @@ export default function DashboardPage() {
           <LifeScoreRing score={lifeScore} habitScore={habitScore} />
           {user?.id ? (
             <>
-              <MonthlyCheckboxTracker userId={user.id} />
-              <DailyRoutineTimeline userId={user.id} />
-              <GoalsList userId={user.id} />
+              <ErrorBoundary sectionName="Savings Tracker">
+                <MonthlyCheckboxTracker userId={user.id} />
+              </ErrorBoundary>
+              <ErrorBoundary sectionName="Daily Routine">
+                <DailyRoutineTimeline userId={user.id} />
+              </ErrorBoundary>
+              <ErrorBoundary sectionName="Goals">
+                <GoalsList userId={user.id} />
+              </ErrorBoundary>
             </>
           ) : (
             <div className="py-12 text-center text-muted-foreground">

@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState, useCallback } from 'react'
+import { supabase } from '@/lib/supabase/client'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -22,9 +22,8 @@ export function WorkoutToday({ userId }: WorkoutTodayProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const dayOfWeek = new Date().getDay()
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!userId) { setLoading(false); return }
-    const supabase = createClient()
     const { data } = await supabase
       .from('workout_plans')
       .select('*, workout_plan_exercises(*, exercises(*))')
@@ -39,7 +38,7 @@ export function WorkoutToday({ userId }: WorkoutTodayProps) {
       setIsCompleted(!!log)
     }
     setLoading(false)
-  }
+  }, [userId, dayOfWeek])
 
   const handleLog = async () => {
     if (!userId || !plan || logging || isCompleted) return
@@ -66,7 +65,7 @@ export function WorkoutToday({ userId }: WorkoutTodayProps) {
     }
   }
 
-  useEffect(() => { load() }, [userId])
+  useEffect(() => { load() }, [load])
 
   return (
     <Card>

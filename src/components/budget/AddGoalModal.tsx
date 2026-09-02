@@ -5,7 +5,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { toast } from 'react-hot-toast'
 
 interface AddGoalModalProps {
@@ -20,7 +20,6 @@ export function AddGoalModal({ isOpen, onClose, userId, onSuccess }: AddGoalModa
   const [targetAmount, setTargetAmount] = useState('')
   const [currentAmount, setCurrentAmount] = useState('')
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

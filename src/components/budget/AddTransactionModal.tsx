@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/Label";
 import { createTransaction } from "@/lib/budget";
 import { toast } from "react-hot-toast";
 import { format } from "date-fns";
+import { BudgetCategory } from "@/types";
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -16,13 +17,19 @@ interface AddTransactionModalProps {
   onSuccess: () => void;
 }
 
-const CATEGORIES = [
-  "food",
-  "transport",
-  "personal",
-  "utilities",
-  "salary",
-  "other",
+const CATEGORIES: { value: BudgetCategory; label: string; emoji: string }[] = [
+  { value: "rent", label: "Rent", emoji: "🏠" },
+  { value: "food", label: "Food", emoji: "🍛" },
+  { value: "transport", label: "Transport", emoji: "🚌" },
+  { value: "personal", label: "Personal", emoji: "👕" },
+  { value: "utilities", label: "Utilities", emoji: "⚡" },
+  { value: "entertainment", label: "Entertainment", emoji: "🎬" },
+  { value: "health", label: "Health", emoji: "🏥" },
+  { value: "learning", label: "Learning", emoji: "📚" },
+  { value: "sip", label: "SIP", emoji: "📈" },
+  { value: "emergency_fund", label: "Emergency Fund", emoji: "🚨" },
+  { value: "salary", label: "Salary", emoji: "💰" },
+  { value: "other", label: "Other", emoji: "📦" },
 ];
 const TYPES = ["expense", "income", "saving", "investment"];
 
@@ -115,8 +122,8 @@ export function AddTransactionModal({
               className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-600"
             >
               {CATEGORIES.map((c) => (
-                <option key={c} value={c} className="capitalize">
-                  {c}
+                <option key={c.value} value={c.value} className="capitalize">
+                  {c.emoji} {c.label}
                 </option>
               ))}
             </select>

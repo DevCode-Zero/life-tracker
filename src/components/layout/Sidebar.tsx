@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/store";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import {
   LayoutDashboard,
   Flame,
@@ -31,7 +31,6 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, sidebarOpen, setSidebarOpen } = useStore();
-  const supabase = createClient();
 
   const handleSignOut = async () => {
     try {

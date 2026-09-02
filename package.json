@@ -36,6 +36,8 @@
     "@supabase/supabase-js": "^2.98.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "baseline-browser-mapping": "^2.11.19",
+    "caniuse-lite": "^1.0.30001810",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",

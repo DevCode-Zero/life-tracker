@@ -77,10 +77,9 @@ CREATE TABLE public.budget_items (
   budgeted_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
   month           CHAR(7) NOT NULL,   -- "2026-03"
   is_recurring    BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, category, month)
 );
-
-CREATE INDEX idx_budget_items_user_month ON public.budget_items(user_id, month);
 
 -- ── Transactions ──────────────────────────────────────────────
 CREATE TABLE public.transactions (
@@ -219,6 +218,19 @@ CREATE TABLE public.meal_logs (
 
 CREATE INDEX idx_meal_logs_user_date ON public.meal_logs(user_id, logged_at);
 
+-- ── Daily Routines ────────────────────────────────────────────
+CREATE TABLE public.daily_routines (
+  id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  label       TEXT NOT NULL,
+  time        TEXT NOT NULL,           -- "HH:MM"
+  is_done     BOOLEAN NOT NULL DEFAULT FALSE,
+  "order"     SMALLINT NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_daily_routines_user ON public.daily_routines(user_id);
+
 -- ── Grocery List ──────────────────────────────────────────────
 CREATE TABLE public.grocery_items (
   id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -245,6 +257,7 @@ ALTER TABLE public.workout_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.workout_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.meal_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.meal_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.daily_routines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.grocery_items ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies — users can only access their own data
@@ -260,6 +273,7 @@ CREATE POLICY "Users own workout_plans" ON public.workout_plans FOR ALL USING (a
 CREATE POLICY "Users own workout_logs" ON public.workout_logs FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users own meal_plans" ON public.meal_plans FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users own meal_logs" ON public.meal_logs FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users own daily_routines" ON public.daily_routines FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users own grocery_items" ON public.grocery_items FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Exercises are public" ON public.exercises FOR SELECT USING (true);
 

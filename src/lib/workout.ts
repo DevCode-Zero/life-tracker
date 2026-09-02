@@ -1,8 +1,6 @@
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { format, startOfWeek } from "date-fns";
 import { todayString } from "@/lib/utils";
-
-const supabase = createClient();
 
 export async function getWorkoutPlans(userId: string) {
   const { data, error } = await supabase
@@ -11,7 +9,7 @@ export async function getWorkoutPlans(userId: string) {
     .eq("user_id", userId)
     .eq("is_active", true);
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   return data;
 }
 
@@ -34,7 +32,7 @@ export async function createWorkoutPlan(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   return data;
 }
 
@@ -46,14 +44,14 @@ export async function updateWorkoutPlan(id: string, updates: any) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   return data;
 }
 
 export async function deleteWorkoutPlan(id: string) {
   const { error } = await supabase.from("workout_plans").delete().eq("id", id);
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
 }
 
 export async function getWeeklyWorkoutCount(userId: string): Promise<number> {
@@ -67,7 +65,7 @@ export async function getWeeklyWorkoutCount(userId: string): Promise<number> {
     .eq("user_id", userId)
     .gte("started_at", start);
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   return count || 0;
 }
 
@@ -95,7 +93,7 @@ export async function logWorkout(userId: string, planId: string) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   return data;
 }
 
@@ -110,6 +108,6 @@ export async function getTodaysWorkoutLog(userId: string, planId: string) {
     .lte("started_at", `${today}T23:59:59`)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) throw new Error(error.message);
   return data;
 }

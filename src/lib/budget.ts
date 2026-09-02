@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import type {
   Transaction,
   BudgetItem,
@@ -8,8 +8,6 @@ import type {
   CreateTransactionForm,
 } from "@/types";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-
-const supabase = createClient();
 
 // ── Transactions ──────────────────────────────────────────────
 
@@ -70,7 +68,10 @@ export async function upsertBudgetItem(
 ): Promise<BudgetItem> {
   const { data, error } = await supabase
     .from("budget_items")
-    .upsert({ ...item, user_id: userId })
+    .upsert(
+      { ...item, user_id: userId },
+      { onConflict: "user_id,category,month" },
+    )
     .select()
     .single();
 

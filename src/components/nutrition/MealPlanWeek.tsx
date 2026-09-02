@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase/client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Utensils, Plus, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,12 +23,11 @@ export function MealPlanWeek({ userId }: MealPlanWeekProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const today = new Date().getDay();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!userId) {
       setLoading(false);
       return;
     }
-    const supabase = createClient();
     const [mealsData, logsData] = await Promise.all([
       supabase
         .from("meal_plans")
@@ -41,7 +40,7 @@ export function MealPlanWeek({ userId }: MealPlanWeekProps) {
     setMeals(mealsData.data ?? []);
     setLogs(logsData);
     setLoading(false);
-  };
+  }, [userId]);
 
   const handleLog = async (planId: string) => {
     if (!userId) return;
@@ -67,7 +66,7 @@ export function MealPlanWeek({ userId }: MealPlanWeekProps) {
 
   useEffect(() => {
     load();
-  }, [userId]);
+  }, [load]);
 
   const todayMeals = meals.filter((m) => m.day_of_week === today);
   const totalProtein = todayMeals.reduce((s, m) => s + (m.protein_g ?? 0), 0);

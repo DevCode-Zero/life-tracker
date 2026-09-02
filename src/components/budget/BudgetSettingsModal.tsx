@@ -26,6 +26,10 @@ const CATEGORIES: { key: BudgetCategory; label: string; emoji: string }[] = [
   { key: "entertainment", label: "Entertainment", emoji: "🎬" },
   { key: "health", label: "Health", emoji: "🏥" },
   { key: "learning", label: "Learning", emoji: "📚" },
+  { key: "sip", label: "SIP", emoji: "📈" },
+  { key: "emergency_fund", label: "Emergency Fund", emoji: "🚨" },
+  { key: "salary", label: "Salary", emoji: "💰" },
+  { key: "other", label: "Other", emoji: "📦" },
 ];
 
 export function BudgetSettingsModal({

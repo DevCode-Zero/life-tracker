@@ -3,6 +3,7 @@
 import { useStore } from "@/store";
 import { Sidebar } from "./Sidebar";
 import { AIAssistant } from "@/components/ai/AIAssistant";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
 
@@ -38,7 +39,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">{children}</div>
       </main>
 
-      <AIAssistant />
+      <ErrorBoundary sectionName="AI Assistant">
+        <AIAssistant />
+      </ErrorBoundary>
     </div>
   );
 }

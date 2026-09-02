@@ -1,7 +1,5 @@
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { todayString } from '@/lib/utils'
-
-const supabase = createClient()
 
 export async function getMealPlans(userId: string) {
   const { data, error } = await supabase
@@ -10,7 +8,7 @@ export async function getMealPlans(userId: string) {
     .eq('user_id', userId)
     .order('day_of_week')
   
-  if (error) throw error
+  if (error) throw new Error(error.message)
   return data
 }
 
@@ -28,7 +26,7 @@ export async function createMealPlan(userId: string, name: string, dayOfWeek: nu
     .select()
     .single()
   
-  if (error) throw error
+  if (error) throw new Error(error.message)
   return data
 }
 
@@ -40,7 +38,7 @@ export async function updateMealPlan(id: string, updates: any) {
     .select()
     .single()
   
-  if (error) throw error
+  if (error) throw new Error(error.message)
   return data
 }
 
@@ -50,7 +48,7 @@ export async function deleteMealPlan(id: string) {
     .delete()
     .eq('id', id)
   
-  if (error) throw error
+  if (error) throw new Error(error.message)
 }
 
 export async function logMeal(userId: string, planId: string) {
@@ -79,7 +77,7 @@ export async function logMeal(userId: string, planId: string) {
     .select()
     .single()
   
-  if (error) throw error
+  if (error) throw new Error(error.message)
   return data
 }
 
@@ -91,6 +89,6 @@ export async function getTodaysMealLogs(userId: string) {
     .eq('user_id', userId)
     .eq('logged_at', today)
   
-  if (error) throw error
+  if (error) throw new Error(error.message)
   return data?.map(d => d.meal_plan_id) || []
 }

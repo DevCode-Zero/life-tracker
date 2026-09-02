@@ -15,21 +15,27 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
+
     if (isOpen) {
       document.addEventListener('keydown', handleEsc)
-      // Prevent scrolling when modal is open
       document.body.style.overflow = 'hidden'
     }
+
     return () => {
       document.removeEventListener('keydown', handleEsc)
       document.body.style.overflow = 'unset'
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, mounted])
 
-  if (!mounted) return null
+  if (!mounted || typeof document === 'undefined') return null
 
   return createPortal(
     <AnimatePresence>

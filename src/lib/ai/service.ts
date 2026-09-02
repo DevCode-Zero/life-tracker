@@ -1,8 +1,5 @@
 import type { AIContext } from "./types";
 
-const OPENROUTER_API_KEY = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY || "";
-const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-
 export interface AIResponse {
   action: string;
   payload: Record<string, unknown>;
@@ -165,40 +162,27 @@ User says: "${userInput}"
 
 Respond with ONLY the JSON object. In the "response" field, write plain text only — no markdown, no bold (**), no headers. Use actual line breaks (\n) for new lines. Keep it clean and easy to read.`;
 
-    const response = await fetch(OPENROUTER_API_URL, {
+    const apiResponse = await fetch("/api/ai", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer":
-          typeof window !== "undefined"
-            ? window.location.origin
-            : "http://localhost:3000",
-        "X-Title": "Life Tracker AI",
-      },
-      body: JSON.stringify({
-        model: "openrouter/free",
-        messages: [{ role: "user", content: fullPrompt }],
-        temperature: 0.7,
-        max_tokens: 2048,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: fullPrompt }),
     });
 
-    if (!response.ok) {
-      const error = await response.text();
+    if (!apiResponse.ok) {
+      const errorData = await apiResponse.json().catch(() => ({}));
 
-      // Retry logic for rate limits
-      if (response.status === 429 && retryCount < 3) {
-        const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+      if (apiResponse.status === 429 && retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 1000;
         await new Promise((resolve) => setTimeout(resolve, delay));
         return sendMessage(messages, context, retryCount + 1);
       }
 
-      throw new Error(`API error: ${response.status} - ${error}`);
+      throw new Error(
+        errorData.error || `API error: ${apiResponse.status}`,
+      );
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "";
+    const { content } = await apiResponse.json();
 
     // Extract JSON from response (in case there's extra text)
     const jsonMatch = content.match(/\{[\s\S]*\}/);

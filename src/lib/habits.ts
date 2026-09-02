@@ -1,8 +1,6 @@
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import type { Habit, HabitLog, HabitWithLogs, CreateHabitForm } from "@/types";
 import { format, subDays, startOfWeek } from "date-fns";
-
-const supabase = createClient();
 
 // ── CRUD ─────────────────────────────────────────────────────
 

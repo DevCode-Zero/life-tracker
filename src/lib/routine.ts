@@ -1,7 +1,5 @@
-import { createClient } from './supabase/client'
+import { supabase } from './supabase/client'
 import { DailyRoutine } from '@/types'
-
-const supabase = createClient()
 
 export async function getRoutines(userId: string): Promise<DailyRoutine[]> {
   const { data, error } = await supabase

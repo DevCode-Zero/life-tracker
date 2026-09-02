@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase/client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Progress } from "@/components/ui/Progress";
 import { Badge } from "@/components/ui/Badge";
@@ -34,7 +34,6 @@ export function GoalsList({ userId }: GoalsListProps) {
   const load = async () => {
     if (!userId) return;
     try {
-      const supabase = createClient();
       const { data, error } = await supabase
         .from("financial_goals")
         .select("*")

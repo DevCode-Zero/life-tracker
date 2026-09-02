@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabase/client";
 import { safeGetSession } from "@/lib/supabase/safe-session";
 import { useStore } from "@/store";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setLoading } = useStore();
-  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     // Get initial session

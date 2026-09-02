@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import "./globals.css";
 
 const syne = Syne({
@@ -34,8 +35,8 @@ export const metadata: Metadata = {
     title: "Life Tracker",
   },
   icons: {
-    icon: "/icons/icon-192.png",
-    apple: "/icons/apple-touch-icon.png",
+    icon: "/icons/icon.svg",
+    apple: "/icons/icon.svg",
   },
   openGraph: {
     title: "Life Tracker",
@@ -62,7 +63,9 @@ export default function RootLayout({
         className={`${syne.variable} ${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {children}
+          <ErrorBoundary sectionName="App">
+            {children}
+          </ErrorBoundary>
           <Toaster
             position="top-right"
             toastOptions={{

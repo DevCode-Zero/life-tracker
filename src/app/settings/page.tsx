@@ -5,15 +5,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Label } from "@/components/ui/Label";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { useState, useEffect, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase/client";
 import { toast } from "react-hot-toast";
 
 export default function SettingsPage() {
   const { user, setUser } = useStore();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     if (user?.full_name) {
